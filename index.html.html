@@ -1,0 +1,157 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Desafío Registro de Accidentes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+  </style>
+</head>
+<body>
+<section class="section">
+  <div class="container">
+    <h1 class="title"> Desafío QA - Registro de Accidentes</h1>
+    <div class="tabs is-boxed is-fullwidth is-medium">
+      <ul>
+        <li class="is-active" onclick="showTab(0)"><a> Datos Iniciales</a></li>
+        <li onclick="showTab(1)"><a>Datos del Accidente</a></li>
+        <li onclick="showTab(2)"><a>Afectados</a></li>
+        <li onclick="showTab(3)"><a> Confirmación</a></li>
+      </ul>
+    </div>
+
+    <form id="form-accidente">
+      <div class="tab-content active">
+        <div class="field">
+          <label class="label">Fecha del Accidente</label>
+          <div class="control">
+            <input class="input" type="date" id="fecha">
+          </div>
+        </div>
+        <div class="field">
+          <label class="label">Hora Aproximada</label>
+          <div class="control">
+            <input class="input" type="text" id="hora" placeholder="Ej: 18:45">
+          </div>
+        </div>
+        <div class="field">
+          <label class="label">ID de Registro</label>
+          <div class="control">
+            <input class="input" type="text" id="id_registro" placeholder="AUT-123">
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="field">
+          <label class="label">Tipo de Accidente</label>
+          <div class="select is-fullwidth">
+            <select id="tipo">
+              <option value="">-- Seleccione --</option>
+              <option value="colision">Colisión</option>
+              <option value="volcadura">Volcadura</option>
+              <option value="choque multiple">Choque Múltiple</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label class="label">Punto Km</label>
+          <div class="control">
+            <input class="input" type="number" id="km" placeholder="Ej: 98.4">
+          </div>
+        </div>
+        <div class="field">
+          <label class="label">Condiciones Climáticas</label>
+          <div class="control">
+            <label class="checkbox"><input type="checkbox" id="lluvia"> Lluvia</label>
+            <label class="checkbox"><input type="checkbox" id="noche"> Noche</label>
+            <label class="checkbox"><input type="checkbox" id="niebla"> Niebla</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="field">
+          <label class="label">Vehículos Involucrados</label>
+          <div class="control">
+            <input class="input" type="number" id="vehiculos">
+          </div>
+        </div>
+        <div class="field">
+          <label class="label">Heridos Reportados</label>
+          <div class="control">
+            <input class="input" type="number" id="heridos">
+          </div>
+        </div>
+        <div class="field">
+          <label class="label">Testigos</label>
+          <div class="control">
+            <input class="input" type="number" id="testigos">
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="box">
+          <p><strong>Verifique todos los datos antes de enviar.</strong></p>
+        </div>
+        <button class="button is-danger is-fullwidth" type="button" onclick="validar()"> Enviar</button>
+        <div id="resultado" class="notification mt-4 is-light"></div>
+      </div>
+    </form>
+  </div>
+</section>
+
+<script>
+function showTab(i) {
+  const tabs = document.querySelectorAll(".tab-content");
+  const navs = document.querySelectorAll(".tabs li");
+  tabs.forEach(t => t.classList.remove("active"));
+  navs.forEach(n => n.classList.remove("is-active"));
+  tabs[i].classList.add("active");
+  navs[i].classList.add("is-active");
+}
+
+function validar() {
+  const errores = [];
+
+  const fecha = document.getElementById("fecha").value;
+  const hora = document.getElementById("hora").value;
+  const id = document.getElementById("id_registro").value.trim();
+  const tipo = document.getElementById("tipo").value;
+  const km = parseFloat(document.getElementById("km").value);
+  const lluvia = document.getElementById("lluvia").checked;
+  const noche = document.getElementById("noche").checked;
+  const niebla = document.getElementById("niebla").checked;
+  const vehiculos = parseInt(document.getElementById("vehiculos").value);
+  const heridos = parseInt(document.getElementById("heridos").value);
+  const testigos = parseInt(document.getElementById("testigos").value);
+
+  if (!fecha) errores.push("Falta la fecha.");
+  if (!hora.match(/^\d{2}:\d{2}$/)) errores.push("Formato de hora inválido.");
+  if (!id.match(/^AUT-[0-9]{3}$/)) errores.push("ID debe seguir formato AUT-###.");
+  if (tipo === "") errores.push("Tipo de accidente no seleccionado.");
+  if (km < 0 || km > 200) errores.push("El Km está fuera del rango 0-200.");
+  if (vehiculos < 1) errores.push("Debe haber al menos un vehículo.");
+  if (heridos > vehiculos * 5) errores.push("Demasiados heridos para la cantidad de vehículos.");
+  if ((lluvia || noche || niebla) && testigos < 1) errores.push("En malas condiciones, debe haber al menos un testigo.");
+  if (testigos > vehiculos * 3) errores.push("Número excesivo de testigos comparado con vehículos.");
+
+  const resultado = document.getElementById("resultado");
+  if (errores.length > 0) {
+    resultado.className = "notification is-danger";
+    resultado.innerHTML = "<strong>Errores detectados:</strong><ul>" + errores.map(e => "<li>" + e + "</li>").join("") + "</ul>";
+  } else {
+    resultado.className = "notification is-success";
+    resultado.innerHTML = "<strong>Registro enviado exitosamente.</strong>";
+  }
+}
+</script>
+</body>
+</html>
